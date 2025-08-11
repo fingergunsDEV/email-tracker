@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Email Campaign Tracker</title>
+	<script src="https://cdn.tailwindcss.com"></script>
+	<style>
+		@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+		body {
+			font-family: 'Inter', sans-serif;
+		}
+
+		.status-sent {
+			@apply bg-blue-100 text-blue-800;
+		}
+
+		.status-opened {
+			@apply bg-green-100 text-green-800;
+		}
+
+		.status-replied {
+			@apply bg-purple-100 text-purple-800;
+		}
+
+		.status-scheduled {
+			@apply bg-yellow-100 text-yellow-800;
+		}
+
+		.status-draft {
+			@apply bg-gray-100 text-gray-800;
+		}
+	</style>
+</head>
+
+<body class="bg-gradient-to-br from-indigo-50 to-blue-100 min-h-screen">
+	<div class="container mx-auto px-4 py-8">
+		<!-- Header -->
+		<div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+			<h1 class="text-3xl font-bold text-gray-800 mb-2">📧 Email Campaign Tracker</h1>
+			<p class="text-gray-600">Manage templates, track emails, and monitor campaign performance</p>
+		</div>
+
+		<!-- Navigation Tabs -->
+		<div class="bg-white rounded-xl shadow-lg mb-8">
+			<div class="flex border-b border-gray-200">
+				<button onclick="showTab('dashboard')" id="tab-dashboard" class="tab-btn px-6 py-4 font-medium text-indigo-600 border-b-2 border-indigo-600">Dashboard</button>
+				<button onclick="showTab('templates')" id="tab-templates" class="tab-btn px-6 py-4 font-medium text-gray-500 hover:text-gray-700">Templates</button>
+				<button onclick="showTab('campaigns')" id="tab-campaigns" class="tab-btn px-6 py-4 font-medium text-gray-500 hover:text-gray-700">Campaigns</button>
+				<button onclick="showTab('contacts')" id="tab-contacts" class="tab-btn px-6 py-4 font-medium text-gray-500 hover:text-gray-700">Contacts</button>
+			</div>
+		</div>
+
+		<!-- Dashboard Tab -->
+		<div id="dashboard-tab" class="tab-content">
+			<!-- Stats Cards -->
+			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+				<div class="bg-white rounded-xl shadow-lg p-6">
+					<div class="flex items-center justify-between">
+						<div>
+							<p class="text-sm font-medium text-gray-600">Total Sent</p>
+							<p class="text-2xl font-bold text-blue-600" id="total-sent">0</p>
+						</div>
+						<div class="bg-blue-100 p-3 rounded-full">
+							<span class="text-2xl">📤</span>
+						</div>
+					</div>
+				</div>
+				<div class="bg-white rounded-xl shadow-lg p-6">
+					<div class="flex items-center justify-between">
+						<div>
+							<p class="text-sm font-medium text-gray-600">Opened</p>
+							<p class="text-2xl font-bold text-green-600" id="total-opened">0</p>
+						</div>
+						<div class="bg-green-100 p-3 rounded-full">
+							<span class="text-2xl">👀</span>
+						</div>
+					</div>
+				</div>
+				<div class="bg-white rounded-xl shadow-lg p-6">
+					<div class="flex items-center justify-between">
+						<div>
+							<p class="text-sm font-medium text-gray-600">Replied</p>
+							<p class="text-2xl font-bold text-purple-600" id="total-replied">0</p>
+						</div>
+						<div class="bg-purple-100 p-3 rounded-full">
+							<span class="text-2xl">💬</span>
+						</div>
+					</div>
+				</div>
+				<div class="bg-white rounded-xl shadow-lg p-6">
+					<div class="flex items-center justify-between">
+						<div>
+							<p class="text-sm font-medium text-gray-600">Scheduled</p>
+							<p class="text-2xl font-bold text-yellow-600" id="total-scheduled">0</p>
+						</div>
+						<div class="bg-yellow-100 p-3 rounded-full">
+							<span class="text-2xl">⏰</span>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Recent Activity -->
+			<div class="bg-white rounded-xl shadow-lg p-6">
+				<h3 class="text-xl font-semibold text-gray-800 mb-4">Recent Email Activity</h3>
+				<div id="recent-activity" class="space-y-3">
+					<p class="text-gray-500 text-center py-8">No recent activity. Start by creating a campaign!</p>
+				</div>
+			</div>
+		</div>
+
+		<!-- Templates Tab -->
+		<div id="templates-tab" class="tab-content hidden">
+			<div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+				<div class="flex justify-between items-center mb-4">
+					<h3 class="text-xl font-semibold text-gray-800">Email Templates</h3>
+					<button onclick="showCreateTemplate()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium">+ New Template</button>
+				</div>
+
+				<!-- Create Template Form -->
+				<div id="template-form" class="hidden mb-6 p-4 bg-gray-50 rounded-lg">
+					<h4 class="font-medium text-gray-800 mb-3">Create New Template</h4>
+					<div class="space-y-4">
+						<input type="text" id="template-name" placeholder="Template Name" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+						<input type="text" id="template-subject" placeholder="Email Subject" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+						<textarea id="template-content" placeholder="Email Content (HTML supported)" rows="6" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"></textarea>
+						<div class="flex gap-2">
+							<button onclick="saveTemplate()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">Save Template</button>
+							<button onclick="hideCreateTemplate()" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg">Cancel</button>
+						</div>
+					</div>
+				</div>
+
+				<!-- Templates List -->
+				<div id="templates-list" class="space-y-3">
+					<p class="text-gray-500 text-center py-8">No templates yet. Create your first template!</p>
+				</div>
+			</div>
+		</div>
+
+		<!-- Campaigns Tab -->
+		<div id="campaigns-tab" class="tab-content hidden">
+			<div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+				<div class="flex justify-between items-center mb-4">
+					<h3 class="text-xl font-semibold text-gray-800">Email Campaigns</h3>
+					<button onclick="showCreateCampaign()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium">+ New Campaign</button>
+				</div>
+
+				<!-- Create Campaign Form -->
+				<div id="campaign-form" class="hidden mb-6 p-4 bg-gray-50 rounded-lg">
+					<h4 class="font-medium text-gray-800 mb-3">Create New Campaign</h4>
+					<div class="space-y-4">
+						<input type="text" id="campaign-name" placeholder="Campaign Name" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+						<select id="campaign-template" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+							<option value="">Select Template</option>
+						</select>
+						<select id="campaign-contacts" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+							<option value="">Select Contact List</option>
+						</select>
+						<div class="flex items-center gap-4">
+							<label class="flex items-center">
+								<input type="radio" name="send-type" value="now" checked class="mr-2">
+								Send Now
+							</label>
+							<label class="flex items-center">
+								<input type="radio" name="send-type" value="schedule" class="mr-2">
+								Schedule
+							</label>
+						</div>
+						<input type="datetime-local" id="schedule-time" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent hidden">
+						<div class="flex gap-2">
+							<button onclick="createCampaign()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">Create Campaign</button>
+							<button onclick="hideCreateCampaign()" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg">Cancel</button>
+						</div>
+					</div>
+				</div>
+
+				<!-- Campaigns List -->
+				<div id="campaigns-list" class="space-y-3">
+					<p class="text-gray-500 text-center py-8">No campaigns yet. Create your first campaign!</p>
+				</div>
+			</div>
+		</div>
+
+		<!-- Contacts Tab -->
+		<div id="contacts-tab" class="tab-content hidden">
+			<div class="bg-white rounded-xl shadow-lg p-6">
+				<div class="flex justify-between items-center mb-4">
+					<h3 class="text-xl font-semibold text-gray-800">Contact Lists</h3>
+					<button onclick="showAddContacts()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium">+ Add Contacts</button>
+				</div>
+
+				<!-- Add Contacts Form -->
+				<div id="contacts-form" class="hidden mb-6 p-4 bg-gray-50 rounded-lg">
+					<h4 class="font-medium text-gray-800 mb-3">Add Contact List</h4>
+					<div class="space-y-4">
+						<input type="text" id="list-name" placeholder="List Name" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+						<textarea id="email-list" placeholder="Enter emails (one per line)&#10;example@email.com&#10;another@email.com" rows="6" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"></textarea>
+						<div class="flex gap-2">
+							<button onclick="saveContactList()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">Save List</button>
+							<button onclick="hideAddContacts()" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg">Cancel</button>
+						</div>
+					</div>
+				</div>
+
+				<!-- Contact Lists -->
+				<div id="contact-lists" class="space-y-3">
+					<p class="text-gray-500 text-center py-8">No contact lists yet. Add your first list!</p>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script>
+		// Server API base URL (local Node server)
+		const API_BASE = 'http://localhost:3000/api';
+		// Helper for API calls
+		async function apiRequest(endpoint, method = 'GET', body = null) {
+			const options = {
+				method,
+				headers: {
+					'Content-Type': 'application/json'
+				},
+			};
+			if (body) options.body = JSON.stringify(body);
+			const res = await fetch(`${API_BASE}${endpoint}`, options);
+			if (!res.ok) throw new Error(`API error: ${res.status}`);
+			return await res.json();
+		}
+		// Tab management
+		function showTab(tabName) {
+			document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
+			document.querySelectorAll('.tab-btn').forEach(btn => {
+				btn.classList.remove('text-indigo-600', 'border-b-2', 'border-indigo-600');
+				btn.classList.add('text-gray-500');
+			});
+			document.getElementById(tabName + '-tab').classList.remove('hidden');
+			document.getElementById('tab-' + tabName).classList.add('text-indigo-600', 'border-b-2', 'border-indigo-600');
+			document.getElementById('tab-' + tabName).classList.remove('text-gray-500');
+			// Refresh content
+			if (tabName === 'dashboard') updateDashboard();
+			if (tabName === 'templates') renderTemplates();
+			if (tabName === 'campaigns') renderCampaigns();
+			if (tabName === 'contacts') renderContactLists();
+		}
+		// Dashboard update
+		async function updateDashboard() {
+			try {
+				const stats = await apiRequest('/stats');
+				document.getElementById('total-sent').textContent = stats.sent;
+				document.getElementById('total-opened').textContent = stats.opened;
+				document.getElementById('total-replied').textContent = stats.replied;
+				document.getElementById('total-scheduled').textContent = stats.scheduled;
+				const activity = await apiRequest('/recent-activity');
+				const container = document.getElementById('recent-activity');
+				if (activity.length === 0) {
+					container.innerHTML = '<p class="text-gray-500 text-center py-8">No recent activity. Start by creating a campaign!</p>';
+					return;
+				}
+				container.innerHTML = activity.map(act => `
+					<div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+						<div>
+							<p class="font-medium">${act.email}</p>
+							<p class="text-sm text-gray-600">${act.campaignName} - ${act.status}</p>
+						</div>
+						<span class="px-3 py-1 rounded-full text-sm status-${act.status.toLowerCase()}">${act.status}</span>
+					</div>
+				`).join('');
+			} catch (err) {
+				console.error(err);
+				alert('Error loading dashboard');
+			}
+		}
+		// Template management
+		function showCreateTemplate() {
+			document.getElementById('template-form').classList.remove('hidden');
+		}
+
+		function hideCreateTemplate() {
+			document.getElementById('template-form').classList.add('hidden');
+			clearTemplateForm();
+		}
+
+		function clearTemplateForm() {
+			document.getElementById('template-name').value = '';
+			document.getElementById('template-subject').value = '';
+			document.getElementById('template-content').value = '';
+		}
+		async function saveTemplate() {
+			const name = document.getElementById('template-name').value.trim();
+			const subject = document.getElementById('template-subject').value.trim();
+			const content = document.getElementById('template-content').value.trim();
+			if (!name || !subject || !content) {
+				alert('Please fill in all fields');
+				return;
+			}
+			try {
+				await apiRequest('/templates', 'POST', {
+					name,
+					subject,
+					content
+				});
+				hideCreateTemplate();
+				renderTemplates();
+				updateCampaignTemplateOptions();
+			} catch (err) {
+				console.error(err);
+				alert('Error saving template');
+			}
+		}
+		async function renderTemplates() {
+			try {
+				const templates = await apiRequest('/templates');
+				const container = document.getElementById('templates-list');
+				if (templates.length === 0) {
+					container.innerHTML = '<p class="text-gray-500 text-center py-8">No templates yet. Create your first template!</p>';
+					return;
+				}
+				container.innerHTML = templates.map(template => `
+					<div class="border border-gray-200 rounded-lg p-4">
+						<div class="flex justify-between items-start">
+							<div class="flex-1">
+								<h4 class="font-medium text-gray-800">${template.name}</h4>
+								<p class="text-sm text-gray-600 mb-2">Subject: ${template.subject}</p>
+								<p class="text-sm text-gray-500">${template.content.substring(0, 100)}${template.content.length > 100 ? '...' : ''}</p>
+							</div>
+							<button onclick="deleteTemplate(${template.id})" class="text-red-500 hover:text-red-700 ml-4">🗑️</button>
+						</div>
+					</div>
+				`).join('');
+			} catch (err) {
+				console.error(err);
+				alert('Error loading templates');
+			}
+		}
+		async function deleteTemplate(id) {
+			if (confirm('Are you sure you want to delete this template?')) {
+				try {
+					await apiRequest(`/templates/${id}`, 'DELETE');
+					renderTemplates();
+					updateCampaignTemplateOptions();
+				} catch (err) {
+					console.error(err);
+					alert('Error deleting template');
+				}
+			}
+		}
+		// Campaign management
+		function showCreateCampaign() {
+			document.getElementById('campaign-form').classList.remove('hidden');
+			updateCampaignTemplateOptions();
+			updateCampaignContactOptions();
+			document.querySelectorAll('input[name="send-type"]').forEach(radio => {
+				radio.addEventListener('change', (e) => {
+					document.getElementById('schedule-time').classList.toggle('hidden', e.target.value !== 'schedule');
+				});
+			});
+		}
+
+		function hideCreateCampaign() {
+			document.getElementById('campaign-form').classList.add('hidden');
+			clearCampaignForm();
+		}
+
+		function clearCampaignForm() {
+			document.getElementById('campaign-name').value = '';
+			document.getElementById('campaign-template').value = '';
+			document.getElementById('campaign-contacts').value = '';
+			document.querySelector('input[name="send-type"][value="now"]').checked = true;
+			document.getElementById('schedule-time').classList.add('hidden');
+		}
+		async function updateCampaignTemplateOptions() {
+			try {
+				const templates = await apiRequest('/templates');
+				const select = document.getElementById('campaign-template');
+				select.innerHTML = '<option value="">Select Template</option>' +
+					templates.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+			} catch (err) {
+				console.error(err);
+			}
+		}
+		async function updateCampaignContactOptions() {
+			try {
+				const lists = await apiRequest('/contact-lists');
+				const select = document.getElementById('campaign-contacts');
+				select.innerHTML = '<option value="">Select Contact List</option>' +
+					lists.map(list => `<option value="${list.id}">${list.name} (${list.emails.length} contacts)</option>`).join('');
+			} catch (err) {
+				console.error(err);
+			}
+		}
+		async function createCampaign() {
+			const name = document.getElementById('campaign-name').value.trim();
+			const templateId = document.getElementById('campaign-template').value;
+			const contactListId = document.getElementById('campaign-contacts').value;
+			const sendType = document.querySelector('input[name="send-type"]:checked').value;
+			const scheduleTime = document.getElementById('schedule-time').value;
+			if (!name || !templateId || !contactListId) {
+				alert('Please fill in all required fields');
+				return;
+			}
+			if (sendType === 'schedule' && !scheduleTime) {
+				alert('Please select a schedule time');
+				return;
+			}
+			try {
+				await apiRequest('/campaigns', 'POST', {
+					name,
+					templateId,
+					contactListId,
+					sendType,
+					scheduleTime: sendType === 'schedule' ? new Date(scheduleTime).toISOString() : null
+				});
+				hideCreateCampaign();
+				renderCampaigns();
+				updateDashboard();
+			} catch (err) {
+				console.error(err);
+				alert('Error creating campaign');
+			}
+		}
+		async function renderCampaigns() {
+			try {
+				const campaigns = await apiRequest('/campaigns');
+				const container = document.getElementById('campaigns-list');
+				if (campaigns.length === 0) {
+					container.innerHTML = '<p class="text-gray-500 text-center py-8">No campaigns yet. Create your first campaign!</p>';
+					return;
+				}
+				container.innerHTML = campaigns.map(campaign => `
+					<div class="border border-gray-200 rounded-lg p-4">
+						<div class="flex justify-between items-start">
+							<div class="flex-1">
+								<h4 class="font-medium text-gray-800">${campaign.name}</h4>
+								<p class="text-sm text-gray-600">Template: ${campaign.template.name}</p>
+								<p class="text-sm text-gray-600">Contacts: ${campaign.contactList.emails.length}</p>
+								<p class="text-sm text-gray-500">Status: ${campaign.status}</p>
+							</div>
+							<button onclick="deleteCampaign(${campaign.id})" class="text-red-500 hover:text-red-700 ml-4">🗑️</button>
+						</div>
+					</div>
+				`).join('');
+			} catch (err) {
+				console.error(err);
+				alert('Error loading campaigns');
+			}
+		}
+		async function deleteCampaign(id) {
+			if (confirm('Are you sure you want to delete this campaign?')) {
+				try {
+					await apiRequest(`/campaigns/${id}`, 'DELETE');
+					renderCampaigns();
+					updateDashboard();
+				} catch (err) {
+					console.error(err);
+					alert('Error deleting campaign');
+				}
+			}
+		}
+		// Contact management
+		function showAddContacts() {
+			document.getElementById('contacts-form').classList.remove('hidden');
+		}
+
+		function hideAddContacts() {
+			document.getElementById('contacts-form').classList.add('hidden');
+			clearContactsForm();
+		}
+
+		function clearContactsForm() {
+			document.getElementById('list-name').value = '';
+			document.getElementById('email-list').value = '';
+		}
+		async function saveContactList() {
+			const name = document.getElementById('list-name').value.trim();
+			const emails = document.getElementById('email-list').value.trim().split('\n').filter(e => e.trim());
+			if (!name || emails.length === 0) {
+				alert('Please provide list name and at least one email');
+				return;
+			}
+			try {
+				await apiRequest('/contact-lists', 'POST', {
+					name,
+					emails
+				});
+				hideAddContacts();
+				renderContactLists();
+				updateCampaignContactOptions();
+			} catch (err) {
+				console.error(err);
+				alert('Error saving contact list');
+			}
+		}
+		async function renderContactLists() {
+			try {
+				const lists = await apiRequest('/contact-lists');
+				const container = document.getElementById('contact-lists');
+				if (lists.length === 0) {
+					container.innerHTML = '<p class="text-gray-500 text-center py-8">No contact lists yet. Add your first list!</p>';
+					return;
+				}
+				container.innerHTML = lists.map(list => `
+					<div class="border border-gray-200 rounded-lg p-4">
+						<div class="flex justify-between items-start">
+							<div class="flex-1">
+								<h4 class="font-medium text-gray-800">${list.name}</h4>
+								<p class="text-sm text-gray-600">${list.emails.length} contacts</p>
+								<p class="text-sm text-gray-500">${list.emails.slice(0, 3).join(', ')}${list.emails.length > 3 ? '...' : ''}</p>
+							</div>
+							<button onclick="deleteContactList(${list.id})" class="text-red-500 hover:text-red-700 ml-4">🗑️</button>
+						</div>
+					</div>
+				`).join('');
+			} catch (err) {
+				console.error(err);
+				alert('Error loading contact lists');
+			}
+		}
+		async function deleteContactList(id) {
+			if (confirm('Are you sure you want to delete this contact list?')) {
+				try {
+					await apiRequest(`/contact-lists/${id}`, 'DELETE');
+					renderContactLists();
+					updateCampaignContactOptions();
+				} catch (err) {
+					console.error(err);
+					alert('Error deleting contact list');
+				}
+			}
+		}
+		// Initial load
+		showTab('dashboard');
+	</script>
+</body>
+
+</html>
